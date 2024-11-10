@@ -1,5 +1,6 @@
 package store;
 
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,8 @@ class OrderProcessorTest {
         List<Product> colaProducts = new ArrayList<>();
         colaProducts.add(new Product("콜라", 1000, 10, ProductType.NORMAL));
         colaProducts.add(new Product("콜라", 1000, 10,
-                ProductType.promotional(new Promotion("2+1", 2, 1))));
+                ProductType.promotional(new Promotion("2+1", 2, 1, LocalDateTime.of(2024, 8, 1, 0, 0),
+                        LocalDateTime.of(2021, 12, 31, 23, 59)))));
         products.put("콜라", colaProducts);
 
         // 사이다 상품 추가

@@ -1,5 +1,7 @@
 package store.order;
 
+import camp.nextstep.edu.missionutils.DateTimes;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import store.product.Product;
@@ -28,13 +30,15 @@ public class OrderService {
     private OrderResult processInitialOrder(List<Product> products, String productName, int quantity) {
         return products.stream()
                 .filter(Product::isPromotional) //프로모션중인 상품만 필터링
+                .filter(this::isValidPromotion)
                 .findFirst()
                 .map(product -> processPromotionalProduct(products, product, product.getType(), productName, quantity))
-                .orElseGet(() -> createNormalOrder(products.getFirst(), quantity)); //일반 상품 주문
+                .orElseGet(() -> createNormalOrder(products, quantity)); //일반 상품 주문
     }
 
     //프로모션중인 상품이 아닌 경우
-    private OrderResult createNormalOrder(Product product, int originalQuantity) {
+    private OrderResult createNormalOrder(List<Product> products, int originalQuantity) {
+        Product product = findNormalProduct(products);
         product.reduceStock(originalQuantity);
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
@@ -121,9 +125,22 @@ public class OrderService {
         return order.getTotalPrice();
     }
 
-
     private int calculateMembershipDiscount(int price) {
         int discount = (int) (price * 0.3);
         return Math.min(discount, 8000);
+    }
+
+    private boolean isValidPromotion(Product product) {
+        LocalDateTime now = DateTimes.now();
+        return product.getType().getPromotion()
+                .map(promotion -> promotion.isValidPeriod(now))
+                .orElse(false);
+    }
+
+    private Product findNormalProduct(List<Product> products) {
+        return products.stream()
+                .filter(p -> !p.isPromotional())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("[ERROR] 일반 상품을 찾을 수 없습니다."));
     }
 }
