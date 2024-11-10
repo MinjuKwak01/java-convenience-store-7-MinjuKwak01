@@ -62,8 +62,7 @@ public class Product {
         return promotion.map(p -> {
             int requiredQuantity = p.getRequiredQuantity();
             int sum = requiredQuantity + p.getFreeQuantity();
-            return orderedQuantity % sum == requiredQuantity &&
-                    stock >= requiredQuantity && stock >= orderedQuantity;
+            return orderedQuantity % sum == requiredQuantity && stock >= orderedQuantity;
         }).orElse(false);
     }
 }

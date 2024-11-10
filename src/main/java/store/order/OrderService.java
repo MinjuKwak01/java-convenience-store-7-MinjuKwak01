@@ -13,7 +13,8 @@ public class OrderService {
     private final InputView inputView;
     private final OrderExceedPromotionService orderExceedPromotionService;
 
-    public OrderService(ProductList productList, InputView inputView, OrderExceedPromotionService orderExceedPromotionService) {
+    public OrderService(ProductList productList, InputView inputView,
+                        OrderExceedPromotionService orderExceedPromotionService) {
         this.productList = productList;
         this.inputView = inputView;
         this.orderExceedPromotionService = orderExceedPromotionService;
@@ -53,7 +54,8 @@ public class OrderService {
                                                   int quantity) {
         int promotionalStock = product.getStock();
         if (productType.getPromotion().get().actualBuyableQuantity(promotionalStock) < quantity) {
-            return orderExceedPromotionService.handleInsufficientStock(products, product, productName, quantity, promotionalStock);
+            return orderExceedPromotionService.handleInsufficientStock(products, product, productName, quantity,
+                    promotionalStock);
         }
         if (product.canGetMoreFromPromotion(quantity) && askForMoreItems(product)) {
             return processPromotionalStockWithFreeProduct(product, quantity);
@@ -64,34 +66,20 @@ public class OrderService {
     private OrderResult processPromotionalStockWithFreeProduct(Product product, int originalQuantity) {
         Promotion promotion = product.getType().getPromotion()
                 .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
-
-        // 프로모션 적용을 위한 필요 수량 계산
-        int freeQuantity = promotion.getFreeQuantity();
-
-        // 총 주문 수량 (원래 수량 + 추가 수량)
-        int totalOrderQuantity = originalQuantity + freeQuantity;
-
+        int freeQuantity = promotion.calculateFreeQuantity(originalQuantity + promotion.getFreeQuantity()); //1
+        int totalOrderQuantity = originalQuantity + promotion.getFreeQuantity();
         product.reduceStock(totalOrderQuantity);
-
-        // 프로모션 적용된 주문 생성
         OrderItem orderItem = new OrderItem(product.getName(), totalOrderQuantity);
         orderItem.setProductInfo(product);
-
-        return new OrderResult(
-                orderItem,
-                freeQuantity,
-                calculateTotalPrice(product, totalOrderQuantity),
+        return new OrderResult(orderItem, freeQuantity, calculateTotalPrice(product, totalOrderQuantity),
                 calculatePromotionDiscount(product, freeQuantity)
         );
     }
 
     private OrderResult processOrderWithPromotionButNoFreeProduct(Product product, int originalQuantity) {
-        // 프로모션 적용된 주문 생성
         product.reduceStock(originalQuantity);
-
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
-
         return new OrderResult(
                 orderItem,
                 0,
