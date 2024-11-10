@@ -27,4 +27,10 @@ public class Promotion {
         return (purchaseQuantity / (requiredQuantity + freeQuantity));
     }
 
+    public int actualBuyableQuantity(int stock) {
+        int cycleQuantity = requiredQuantity + freeQuantity;
+        int maxCycles = stock / cycleQuantity;
+        return cycleQuantity * maxCycles;
+    }
+
 }
