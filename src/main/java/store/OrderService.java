@@ -100,6 +100,29 @@ public class OrderService {
         return createOrderWithPromotion(product, promotionalStock);
     }
 
+    private OrderResult createMixedOrder(Product product, int promotionalQuantity, int nonPromotionalQuantity) {
+        int totalQuantity = promotionalQuantity + nonPromotionalQuantity;
+
+        Promotion promotion = product.getType().getPromotion()
+                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+
+        // 프로모션이 적용되는 수량에 대한 무료 수량 계산
+        int freeQuantity = promotion.calculateFreeQuantity(promotionalQuantity);
+
+        OrderItem orderItem = new OrderItem(product.getName(), totalQuantity);
+        orderItem.setProductInfo(product);
+
+        int totalPrice = calculateTotalPrice(product, totalQuantity);
+        int promotionDiscount = calculatePromotionDiscount(product, freeQuantity);
+
+        return new OrderResult(
+                orderItem,
+                freeQuantity,
+                totalPrice,
+                promotionDiscount
+        );
+    }
+
     private boolean askForNonPromotionalPurchase(String productName, int nonPromotionalQuantity) {
         String message = String.format("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)",
                 productName, nonPromotionalQuantity);
@@ -113,6 +136,7 @@ public class OrderService {
         );
         return inputView.askYesNo(message);
     }
+
 
     private int calculateTotalPrice(Product product, int quantity) {
         return product.getPrice() * quantity;
