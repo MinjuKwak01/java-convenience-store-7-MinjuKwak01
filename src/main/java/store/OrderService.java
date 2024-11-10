@@ -97,7 +97,7 @@ public class OrderService {
                     product.getType().getPromotion().get().actualBuyableQuantity(promotionalStock),
                     nonPromotionalQuantity);
         }
-        return createOrderWithPromotion(product, promotionalStock);
+        return processPromotionalStockWithFreeProduct(product, promotionalStock);
     }
 
     private OrderResult createMixedOrder(Product product, int promotionalQuantity, int nonPromotionalQuantity) {
@@ -144,5 +144,55 @@ public class OrderService {
 
     private int calculatePromotionDiscount(Product product, int freeQuantity) {
         return product.getPrice() * freeQuantity;
+    }
+
+    public List<OrderResult> applyMembershipDiscount(List<OrderResult> orderResultList) {
+        // 프로모션 미적용 금액의 총합 계산
+        int totalNonPromotionalPrice = orderResultList.stream()
+                .mapToInt(this::calculateNonPromotionalPrice)
+                .sum();
+
+        // 전체 비프로모션 금액에 대한 멤버십 할인 계산
+        int totalMembershipDiscount = calculateMembershipDiscount(totalNonPromotionalPrice);
+
+        // 각 주문별 멤버십 할인 금액을 비율에 따라 분배
+        return orderResultList.stream()
+                .map(order -> {
+                    // 각 주문의 비프로모션 금액이 전체에서 차지하는 비율 계산
+                    double orderRatio = (double) calculateNonPromotionalPrice(order) / totalNonPromotionalPrice;
+
+                    // 해당 주문의 멤버십 할인 금액 계산
+                    int orderMembershipDiscount = (int) (totalMembershipDiscount * orderRatio);
+
+                    // 새로운 OrderResult 생성
+                    return new OrderResult(
+                            order.getOrderItem(),
+                            order.getFreeQuantity(),
+                            order.getTotalPrice(),
+                            order.getPromotionDiscount(),
+                            orderMembershipDiscount
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 프로모션이 적용되지 않은 금액 계산
+    private int calculateNonPromotionalPrice(OrderResult order) {
+        OrderItem item = order.getOrderItem();
+        Product product = item.getSelectedProduct();
+
+        if (product.isPromotional()) {
+            // 프로모션 상품의 경우, 프로모션이 적용되지 않은 수량에 대한 금액만 계산
+            return 0;
+        }
+
+        // 일반 상품의 경우 전체 금액
+        return order.getTotalPrice();
+    }
+
+
+    private int calculateMembershipDiscount(int price) {
+        int discount = (int) (price * 0.3);
+        return Math.min(discount, 8000);
     }
 }
