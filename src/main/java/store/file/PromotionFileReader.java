@@ -1,8 +1,11 @@
 package store.file;
 
+import camp.nextstep.edu.missionutils.DateTimes;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import store.promotion.Promotion;
@@ -37,10 +40,18 @@ public class PromotionFileReader {
         String name = values[0];
         int requiredQuantity = Integer.parseInt(values[1]);
         int freeQuantity = Integer.parseInt(values[2]);
+        LocalDateTime startDate = parseDateTime(values[3]);
+        LocalDateTime endDate = parseDateTime(values[4]);
 
-        Promotion promotion = new Promotion(name, requiredQuantity, freeQuantity);
+        Promotion promotion = new Promotion(name, requiredQuantity, freeQuantity, startDate, endDate);
         promotionMap.put(name, promotion);
     }
+
+    private static LocalDateTime parseDateTime(String dateStr) {
+        return LocalDate.parse(dateStr)
+                .atStartOfDay();  // 해당 날짜의 00:00:00 시간으로 설정
+    }
+
 
     private void validateValues(String[] values) {
         if (values.length != 5) {
