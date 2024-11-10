@@ -49,7 +49,7 @@ public class OrderService {
             // +1해서 주문 진행
             return processPromotionalStockWithFreeProduct(product, quantity);
         }
-        return processPromotionalStockButNoFreeProduct(product, quantity);
+        return processOrderWithPromotionButNoFreeProduct(product, quantity);
     }
 
     private OrderResult processPromotionalStockWithFreeProduct(Product product, int originalQuantity) {
@@ -71,6 +71,19 @@ public class OrderService {
                 freeQuantity,
                 calculateTotalPrice(product, totalOrderQuantity),
                 calculatePromotionDiscount(product, freeQuantity)
+        );
+    }
+
+    private OrderResult processOrderWithPromotionButNoFreeProduct(Product product, int originalQuantity) {
+        // 프로모션 적용된 주문 생성
+        OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
+        orderItem.setProductInfo(product);
+
+        return new OrderResult(
+                orderItem,
+                0,
+                calculateTotalPrice(product, originalQuantity),
+                calculatePromotionDiscount(product, 0)
         );
     }
 
