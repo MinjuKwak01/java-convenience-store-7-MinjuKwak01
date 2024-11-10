@@ -77,14 +77,14 @@ public class OrderService {
     }
 
     private OrderResult processOrderWithPromotionButNoFreeProduct(Product product, int originalQuantity) {
+        Promotion promotion = product.getType().getPromotion()
+                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
         product.reduceStock(originalQuantity);
+        int freeQuantity = promotion.calculateFreeQuantity(originalQuantity);
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
-        return new OrderResult(
-                orderItem,
-                0,
-                calculateTotalPrice(product, originalQuantity),
-                calculatePromotionDiscount(product, 0)
+        return new OrderResult(orderItem, freeQuantity, calculateTotalPrice(product, originalQuantity),
+                calculatePromotionDiscount(product, freeQuantity)
         );
     }
 
