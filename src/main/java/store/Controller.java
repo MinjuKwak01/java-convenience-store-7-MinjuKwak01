@@ -18,23 +18,27 @@ public class Controller {
     }
 
     public void run() {
-        try {
-            processOrders(productList);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        }
+        processOrders();
     }
 
-    private void processOrders(ProductList productList) {
-        // 상품 목록 출력
+    private void processOrders() {
+        displayProducts();
+        List<OrderResult> results = processUserOrders();
+        results = applyMembershipIfRequested(results);
+        printReceipt(results);
+        handleAdditionalPurchase();
+    }
+
+    private void displayProducts() {
         outputView.printProducts(productList);
+    }
 
-        // 주문 입력 받기 (예: [콜라-1],[사이다-2])
+    private List<OrderResult> processUserOrders() {
         Order order = inputView.readOrder(productList);
+        return processOrderItems(order.getOrderItems());
+    }
 
-        List<OrderItem> orderItems = order.getOrderItems();
-
-        // 각 주문 처리
+    private List<OrderResult> processOrderItems(List<OrderItem> orderItems) {
         List<OrderResult> results = new ArrayList<>();
         for (OrderItem requestItem : orderItems) {
             OrderResult result = orderService.processOrder(
@@ -43,18 +47,24 @@ public class Controller {
             );
             results.add(result);
         }
+        return results;
+    }
 
-        boolean useMembership = inputView.askMembership();
-        if (useMembership) {
-            results = orderService.applyMembershipDiscount(results);
+    private List<OrderResult> applyMembershipIfRequested(List<OrderResult> results) {
+        if (inputView.askMembership()) {
+            return orderService.applyMembershipDiscount(results);
         }
+        return results;
+    }
 
+    private void printReceipt(List<OrderResult> results) {
         Receipt receipt = new Receipt();
         receipt.print(results);
+    }
 
-        // 추가 구매 여부 확인
+    private void handleAdditionalPurchase() {
         if (inputView.askAdditionalPurchase()) {
-            processOrders(productList);  // 재귀적으로 추가 주문 처리
+            processOrders();
         }
     }
 
