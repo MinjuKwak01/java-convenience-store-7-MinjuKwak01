@@ -58,8 +58,7 @@ public class Product {
         if (stock == 0) {
             return false;
         }
-        Optional<Promotion> promotion = getType().getPromotion();
-        return promotion.map(p -> {
+        return getType().getPromotion().map(p -> {
             int requiredQuantity = p.getRequiredQuantity();
             int sum = requiredQuantity + p.getFreeQuantity();
             return orderedQuantity % sum == requiredQuantity && stock >= orderedQuantity;
