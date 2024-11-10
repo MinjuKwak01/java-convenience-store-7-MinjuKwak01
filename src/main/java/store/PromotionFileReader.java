@@ -15,7 +15,6 @@ public class PromotionFileReader {
             Map<String, Promotion> promotionMap = new HashMap<>();
             readFile(line, reader, promotionMap);
             return new PromotionList(promotionMap);
-
         } catch (IOException e) {
             throw new IllegalStateException("[ERROR] 프로모션 파일을 읽는데 실패했습니다.", e);
         }

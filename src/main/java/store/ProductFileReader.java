@@ -40,7 +40,7 @@ public class ProductFileReader {
         }
     }
 
-    private void hasOnlyPromotionProduct(List<Product> products){
+    private void hasOnlyPromotionProduct(List<Product> products) {
         if (products.size() == 1 && products.getFirst().isPromotional()) {
             Product promotionalProduct = products.getFirst();
             Product normalProduct = Product.createNormalProduct(promotionalProduct.getName(),

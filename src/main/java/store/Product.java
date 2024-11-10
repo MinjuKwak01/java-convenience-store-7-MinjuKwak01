@@ -47,7 +47,7 @@ public class Product {
 
     public void reduceStock(int quantity) {
         if (stock < quantity) {
-            throw new IllegalArgumentException(String.format("[ERROR] %s의 재고가 부족합니다.", name));
+            throw new IllegalStateException(String.format("[ERROR] %s의 재고가 부족합니다.", name));
         }
         this.stock -= quantity;
     }

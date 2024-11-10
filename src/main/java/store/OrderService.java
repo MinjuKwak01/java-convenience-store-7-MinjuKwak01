@@ -109,9 +109,6 @@ public class OrderService {
 
     private OrderResult createMixedOrder(Product product, int promotionalQuantity, int nonPromotionalQuantity) {
         int totalQuantity = promotionalQuantity + nonPromotionalQuantity;
-
-        // product.reduceStock(totalQuantity);
-
         Promotion promotion = product.getType().getPromotion()
                 .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
 
