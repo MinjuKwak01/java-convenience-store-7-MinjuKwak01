@@ -27,6 +27,9 @@ public class OrderService {
 
     //프로모션중인 상품이 아닌 경우
     private OrderResult createNormalOrder(Product product, int originalQuantity) {
+
+        product.reduceStock(originalQuantity);
+
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
 
@@ -62,6 +65,8 @@ public class OrderService {
         // 총 주문 수량 (원래 수량 + 추가 수량)
         int totalOrderQuantity = originalQuantity + freeQuantity;
 
+        product.reduceStock(totalOrderQuantity);
+
         // 프로모션 적용된 주문 생성
         OrderItem orderItem = new OrderItem(product.getName(), totalOrderQuantity);
         orderItem.setProductInfo(product);
@@ -76,6 +81,8 @@ public class OrderService {
 
     private OrderResult processOrderWithPromotionButNoFreeProduct(Product product, int originalQuantity) {
         // 프로모션 적용된 주문 생성
+        product.reduceStock(originalQuantity);
+
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
 
@@ -102,6 +109,8 @@ public class OrderService {
 
     private OrderResult createMixedOrder(Product product, int promotionalQuantity, int nonPromotionalQuantity) {
         int totalQuantity = promotionalQuantity + nonPromotionalQuantity;
+
+        // product.reduceStock(totalQuantity);
 
         Promotion promotion = product.getType().getPromotion()
                 .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
