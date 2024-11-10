@@ -37,18 +37,30 @@ public class OrderProcessor {
     }
 
     private OrderItem createOrderItem(String item) {
+        String[] parts = validateAndSplitOrderInput(item);
+        String productName = parts[0];
+        int quantity = parseQuantity(parts[1]);
+        return new OrderItem(productName, quantity);
+    }
+
+    private String[] validateAndSplitOrderInput(String item) {
         String[] parts = item.split("-");
+        validateOrderFormat(parts);
+        return parts;
+    }
+
+    private void validateOrderFormat(String[] parts) {
         if (parts.length != 2) {
             throw new IllegalArgumentException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
         }
-        String productName = parts[0];
-        int quantity;
+    }
+
+    private int parseQuantity(String quantityStr) {
         try {
-            quantity = Integer.parseInt(parts[1]);
+            return Integer.parseInt(quantityStr);
         } catch (NumberFormatException e) {
             throw new NumberFormatException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
         }
-        return new OrderItem(productName, quantity);
     }
 
     private void validateOrderItems(List<OrderItem> orderItems) {
