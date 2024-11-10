@@ -47,6 +47,19 @@ public class InputView {
         }
     }
 
+    public boolean askAdditionalPurchase() {
+        while (true) {
+            try {
+                System.out.println("감사합니다. 구매하고 싶은 다른 상품이 있나요? (Y/N)");
+                String input = Console.readLine().toUpperCase();
+                validateYesNoInput(input);
+                return "Y".equals(input);
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
 
     private void validateYesNoInput(String input) {
         if (!input.equals("Y") && !input.equals("N")) {
