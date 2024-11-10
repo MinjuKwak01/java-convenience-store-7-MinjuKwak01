@@ -1,9 +1,9 @@
 package store;
 
 public class Promotion {
-    private String name;
-    private int requiredQuantity;
-    private int freeQuantity;
+    private final String name;
+    private final int requiredQuantity;
+    private final int freeQuantity;
 
     public Promotion(String name, int requiredQuantity, int freeQuantity) {
         this.name = name;
