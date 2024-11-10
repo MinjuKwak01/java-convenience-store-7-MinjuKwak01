@@ -113,4 +113,12 @@ public class OrderService {
         );
         return inputView.askYesNo(message);
     }
+
+    private int calculateTotalPrice(Product product, int quantity) {
+        return product.getPrice() * quantity;
+    }
+
+    private int calculatePromotionDiscount(Product product, int freeQuantity) {
+        return product.getPrice() * freeQuantity;
+    }
 }
