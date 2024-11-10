@@ -1,4 +1,4 @@
-package store;
+package store.order;
 
 public class OrderResult {
     private final OrderItem orderItem;

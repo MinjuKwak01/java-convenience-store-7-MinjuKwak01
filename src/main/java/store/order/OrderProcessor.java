@@ -1,8 +1,9 @@
-package store;
+package store.order;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import store.product.ProductList;
 
 public class OrderProcessor {
     private final ProductList productList;

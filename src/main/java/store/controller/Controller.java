@@ -1,7 +1,15 @@
-package store;
+package store.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import store.order.Order;
+import store.order.OrderItem;
+import store.order.OrderResult;
+import store.order.OrderService;
+import store.product.ProductList;
+import store.view.InputView;
+import store.view.OutputView;
+import store.view.Receipt;
 
 public class Controller {
 
@@ -67,6 +75,5 @@ public class Controller {
             processOrders();
         }
     }
-
 
 }

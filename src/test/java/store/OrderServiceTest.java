@@ -5,12 +5,19 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import store.order.OrderResult;
+import store.order.OrderService;
+import store.product.Product;
+import store.product.ProductList;
+import store.view.InputView;
 
 class OrderServiceTest {
 
     InputView inputView = new InputView();
     @Test
+    @DisplayName("재고 차감 성공 테스트")
     void 재고_차감_성공() {
         // given
         Product product = Product.createNormalProduct("테스트상품", 1000, 10);
@@ -26,6 +33,7 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("재고 부족으로 주문 실패 테스트")
     void 재고_부족으로_주문_실패() {
         // given
         Product product = Product.createNormalProduct("테스트상품", 1000, 5);

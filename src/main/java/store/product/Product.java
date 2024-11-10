@@ -1,6 +1,8 @@
-package store;
+package store.product;
 
 import java.util.Optional;
+import store.promotion.ProductType;
+import store.promotion.Promotion;
 
 public class Product {
     private final String name;
@@ -8,7 +10,7 @@ public class Product {
     private int stock;
     private final ProductType type;  // 상품 타입 추가
 
-    private Product(String name, int price, int stock, ProductType type) {
+    public Product(String name, int price, int stock, ProductType type) {
         this.name = name;
         this.price = price;
         this.stock = stock;

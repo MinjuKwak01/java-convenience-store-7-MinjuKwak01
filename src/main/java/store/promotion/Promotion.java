@@ -1,4 +1,4 @@
-package store;
+package store.promotion;
 
 public class Promotion {
     private final String name;

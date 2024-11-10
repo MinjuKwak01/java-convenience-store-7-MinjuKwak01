@@ -1,9 +1,12 @@
-package store;
+package store.view;
 
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import store.promotion.Promotion;
+import store.product.Product;
+import store.product.ProductList;
 
 public class OutputView {
 
@@ -14,11 +17,6 @@ public class OutputView {
     private static final String OUT_OF_STOCK = "재고 없음";
     private static final String SPACE = " ";
     private static final DecimalFormat PRICE_FORMATTER = new DecimalFormat("###,###");
-    private final ProductList productList;
-
-    public OutputView(ProductList productList) {
-        this.productList = productList;
-    }
 
     private void printHeader() {
         System.out.println(OUTPUT_GREETINGS);

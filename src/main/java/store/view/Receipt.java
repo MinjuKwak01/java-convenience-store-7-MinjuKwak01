@@ -1,6 +1,8 @@
-package store;
+package store.view;
 
 import java.util.List;
+import store.order.OrderItem;
+import store.order.OrderResult;
 
 public class Receipt {
     public void print(List<OrderResult> orderResults) {

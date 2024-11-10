@@ -1,6 +1,8 @@
-package store;
+package store.order;
 
 import java.util.Optional;
+import store.product.Product;
+import store.promotion.Promotion;
 
 public class OrderItem {
     private static final int MIN_QUANTITY = 1;

@@ -1,4 +1,4 @@
-package store;
+package store.product;
 
 import java.util.List;
 import java.util.Map;

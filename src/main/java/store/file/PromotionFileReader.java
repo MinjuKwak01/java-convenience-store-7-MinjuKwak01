@@ -1,10 +1,12 @@
-package store;
+package store.file;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import store.promotion.Promotion;
+import store.promotion.PromotionList;
 
 public class PromotionFileReader {
     private static final String FILE_PATH = "src/main/resources/promotions.md";
@@ -32,7 +34,6 @@ public class PromotionFileReader {
     private void processPromotionLine(String line, Map<String, Promotion> promotionMap) {
         String[] values = line.split(",");
         validateValues(values);
-
         String name = values[0];
         int requiredQuantity = Integer.parseInt(values[1]);
         int freeQuantity = Integer.parseInt(values[2]);

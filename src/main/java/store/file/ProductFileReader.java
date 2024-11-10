@@ -1,4 +1,4 @@
-package store;
+package store.file;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import store.product.Product;
+import store.product.ProductList;
+import store.promotion.Promotion;
+import store.promotion.PromotionList;
 
 public class ProductFileReader {
     private static final String FILE_PATH = "src/main/resources/products.md";
@@ -53,7 +57,6 @@ public class ProductFileReader {
     private void processProductLine(String line, Map<String, List<Product>> productMap, PromotionList promotionList) {
         String[] values = line.split(",");
         validateValues(values);
-
         String name = values[0];
         int price = Integer.parseInt(values[1]);
         String quantityStr = values[2];
