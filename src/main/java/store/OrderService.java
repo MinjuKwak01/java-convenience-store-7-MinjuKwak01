@@ -47,9 +47,31 @@ public class OrderService {
         }
         if (product.canGetMoreFromPromotion(quantity) && askForMoreItems(product)) {
             // +1해서 주문 진행
-            return createOrderWithPromotion(product, quantity);
+            return processPromotionalStockWithFreeProduct(product, quantity);
         }
         return processPromotionalStockButNoFreeProduct(product, quantity);
+    }
+
+    private OrderResult processPromotionalStockWithFreeProduct(Product product, int originalQuantity) {
+        Promotion promotion = product.getType().getPromotion()
+                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+
+        // 프로모션 적용을 위한 필요 수량 계산
+        int freeQuantity = promotion.getFreeQuantity();
+
+        // 총 주문 수량 (원래 수량 + 추가 수량)
+        int totalOrderQuantity = originalQuantity + freeQuantity;
+
+        // 프로모션 적용된 주문 생성
+        OrderItem orderItem = new OrderItem(product.getName(), totalOrderQuantity);
+        orderItem.setProductInfo(product);
+
+        return new OrderResult(
+                orderItem,
+                freeQuantity,
+                calculateTotalPrice(product, totalOrderQuantity),
+                calculatePromotionDiscount(product, freeQuantity)
+        );
     }
 
     //초과된 프로모션 재고 입력했을때
