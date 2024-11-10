@@ -1,7 +1,12 @@
-package store;
+package store.order;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import store.product.Product;
+import store.product.ProductList;
+import store.promotion.ProductType;
+import store.promotion.Promotion;
+import store.view.InputView;
 
 public class OrderService {
     private final ProductList productList;
@@ -21,7 +26,7 @@ public class OrderService {
         return products.stream()
                 .filter(Product::isPromotional) //프로모션중인 상품만 필터링
                 .findFirst()
-                .map(product -> processPromotionalProduct(product, productName, quantity))
+                .map(product -> processPromotionalProduct(products, product, product.getType(), productName, quantity))
                 .orElseGet(() -> createNormalOrder(products.getFirst(), quantity)); //일반 상품 주문
     }
 
@@ -41,12 +46,12 @@ public class OrderService {
         );
     }
 
-    //프로모션중인 상품을 1개 덜 가져온 경우
-    private OrderResult processPromotionalProduct(Product product, String productName, int quantity) {
+    private OrderResult processPromotionalProduct(List<Product> products, Product product, ProductType productType,
+                                                  String productName,
+                                                  int quantity) {
         int promotionalStock = product.getStock();
-
-        if (product.getType().getPromotion().get().actualBuyableQuantity(promotionalStock) < quantity) {
-            return handleInsufficientStock(product, productName, quantity, promotionalStock);
+        if (productType.getPromotion().get().actualBuyableQuantity(promotionalStock) < quantity) {
+            return handleInsufficientStock(products, product, productName, quantity, promotionalStock);
         }
         if (product.canGetMoreFromPromotion(quantity) && askForMoreItems(product)) {
             // +1해서 주문 진행
@@ -95,31 +100,39 @@ public class OrderService {
     }
 
     //초과된 프로모션 재고 입력했을때
-    private OrderResult handleInsufficientStock(Product product, String productName, int quantity,
+    private OrderResult handleInsufficientStock(List<Product> products, Product product, String productName,
+                                                int quantity,
                                                 int promotionalStock) {
-        int nonPromotionalQuantity =
-                quantity - product.getType().getPromotion().get().actualBuyableQuantity(promotionalStock);
+        int actualBuyablePromotionQuantity = product.getType().getPromotion().get()
+                .actualBuyableQuantity(promotionalStock);
+        int nonPromotionalQuantity = quantity - actualBuyablePromotionQuantity;
         if (askForNonPromotionalPurchase(productName, nonPromotionalQuantity)) {
-            return createMixedOrder(product,
-                    product.getType().getPromotion().get().actualBuyableQuantity(promotionalStock),
-                    nonPromotionalQuantity);
+            return createMixedOrder(products, product, actualBuyablePromotionQuantity, nonPromotionalQuantity);
         }
         return processPromotionalStockWithFreeProduct(product, promotionalStock);
     }
 
-    private OrderResult createMixedOrder(Product product, int promotionalQuantity, int nonPromotionalQuantity) {
+    private OrderResult createMixedOrder(List<Product> products, Product promotionalProduct,
+                                         int promotionalQuantity, int nonPromotionalQuantity) {
         int totalQuantity = promotionalQuantity + nonPromotionalQuantity;
-        Promotion promotion = product.getType().getPromotion()
+
+        // 프로모션 상품과 일반 상품 찾기
+        Product normalProduct = findNormalProduct(products);
+
+        // 각각의 재고 차감
+        promotionalProduct.reduceStock(promotionalQuantity);
+        normalProduct.reduceStock(nonPromotionalQuantity);
+
+        Promotion promotion = promotionalProduct.getType().getPromotion()
                 .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
 
-        // 프로모션이 적용되는 수량에 대한 무료 수량 계산
         int freeQuantity = promotion.calculateFreeQuantity(promotionalQuantity);
 
-        OrderItem orderItem = new OrderItem(product.getName(), totalQuantity);
-        orderItem.setProductInfo(product);
+        OrderItem orderItem = new OrderItem(promotionalProduct.getName(), totalQuantity);
+        orderItem.setProductInfo(promotionalProduct);  // 프로모션 상품 정보 설정
 
-        int totalPrice = calculateTotalPrice(product, totalQuantity);
-        int promotionDiscount = calculatePromotionDiscount(product, freeQuantity);
+        int totalPrice = calculateTotalPrice(promotionalProduct, totalQuantity);
+        int promotionDiscount = calculatePromotionDiscount(promotionalProduct, freeQuantity);
 
         return new OrderResult(
                 orderItem,
@@ -127,6 +140,13 @@ public class OrderService {
                 totalPrice,
                 promotionDiscount
         );
+    }
+
+    private Product findNormalProduct(List<Product> products) {
+        return products.stream()
+                .filter(p -> !p.isPromotional())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("[ERROR] 일반 상품을 찾을 수 없습니다."));
     }
 
     private boolean askForNonPromotionalPurchase(String productName, int nonPromotionalQuantity) {
@@ -186,12 +206,10 @@ public class OrderService {
     private int calculateNonPromotionalPrice(OrderResult order) {
         OrderItem item = order.getOrderItem();
         Product product = item.getSelectedProduct();
-
         if (product.isPromotional()) {
             // 프로모션 상품의 경우, 프로모션이 적용되지 않은 수량에 대한 금액만 계산
             return 0;
         }
-
         // 일반 상품의 경우 전체 금액
         return order.getTotalPrice();
     }
