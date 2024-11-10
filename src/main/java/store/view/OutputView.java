@@ -16,6 +16,7 @@ public class OutputView {
     private static final String CURRENCY_UNIT = "원";
     private static final String OUT_OF_STOCK = "재고 없음";
     private static final String SPACE = " ";
+    private static final String COUNT = "개";
     private static final DecimalFormat PRICE_FORMATTER = new DecimalFormat("###,###");
 
     private void printHeader() {
@@ -34,43 +35,52 @@ public class OutputView {
     }
 
     private void printProduct(Product product) {
-        StringBuilder productInfo = new StringBuilder(OUTPUT_DASH)
+        String formattedProduct = createFormattedProduct(product);
+        System.out.println(formattedProduct);
+    }
+
+    private String createFormattedProduct(Product product) {
+        StringBuilder productInfo = createBasicProductInfo(product);
+        appendStockInfo(productInfo, product);
+        appendPromotionInfo(productInfo, product);
+        return productInfo.toString();
+    }
+
+    private StringBuilder createBasicProductInfo(Product product) {
+        return new StringBuilder(OUTPUT_DASH)
                 .append(product.getName())
                 .append(SPACE)
                 .append(formatPrice(product.getPrice()))
                 .append(CURRENCY_UNIT)
                 .append(SPACE);
+    }
 
-        // 재고 상태 출력
-        if (product.isPromotional()) {
-            appendPromotionalStock(productInfo, product);
-        } else {
-            appendNormalStock(productInfo, product);
-        }
+    private void appendStockInfo(StringBuilder sb, Product product) {
+        String stockInfo = getStockInfo(product);
+        sb.append(stockInfo);
+    }
 
-        System.out.println(productInfo);
+    private String getStockInfo(Product product) {
+        Map<Boolean, String> stockMessages = Map.of(
+                true, OUT_OF_STOCK,
+                false, product.getStock() + COUNT
+        );
+        return stockMessages.get(product.getStock() == 0);
+    }
+
+    private void appendPromotionInfo(StringBuilder sb, Product product) {
+        getPromotionInfo(product).ifPresent(promotionName ->
+                sb.append(SPACE).append(promotionName)
+        );
+    }
+
+    private Optional<String> getPromotionInfo(Product product) {
+        return product.isPromotional() ?
+                product.getType().getPromotion().map(Promotion::getName) :
+                Optional.empty();
     }
 
     private String formatPrice(int price) {
         return PRICE_FORMATTER.format(price);
-    }
-
-    private void appendPromotionalStock(StringBuilder sb, Product product) {
-        if (product.getStock() == 0) {
-            sb.append(OUT_OF_STOCK);
-        } else {
-            sb.append(product.getStock()).append("개");
-        }
-
-        Optional<Promotion> promotion = product.getType().getPromotion();
-        sb.append(SPACE).append(promotion.get().getName());
-    }
-
-    private void appendNormalStock(StringBuilder sb, Product product) {
-        if (product.getStock() == 0) {
-            sb.append(OUT_OF_STOCK);
-        } else {
-            sb.append(product.getStock()).append("개");
-        }
     }
 }
