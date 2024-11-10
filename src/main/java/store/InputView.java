@@ -20,4 +20,23 @@ public class InputView {
         }
     }
 
+    public boolean askYesNo(String message) {
+        while (true) {
+            try {
+                System.out.println(message);
+                String input = Console.readLine().toUpperCase();
+                validateYesNoInput(input);
+                return "Y".equals(input);
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    private void validateYesNoInput(String input) {
+        if (!input.equals("Y") && !input.equals("N")) {
+            throw new IllegalArgumentException("[ERROR] 입력은 Y 와 N 중 하나를 입력해야 합니다.");
+        }
+    }
+
 }
