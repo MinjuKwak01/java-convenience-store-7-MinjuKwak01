@@ -25,6 +25,19 @@ public class OrderService {
                 .orElseGet(() -> createNormalOrder(products.getFirst(), quantity)); //일반 상품 주문
     }
 
+    //프로모션중인 상품이 아닌 경우
+    private OrderResult createNormalOrder(Product product, int originalQuantity) {
+        OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
+        orderItem.setProductInfo(product);
+
+        return new OrderResult(
+                orderItem,
+                0,
+                calculateTotalPrice(product, originalQuantity),
+                calculatePromotionDiscount(product, 0)
+        );
+    }
+
     //프로모션중인 상품을 1개 덜 가져온 경우
     private OrderResult processPromotionalProduct(Product product, String productName, int quantity) {
         int promotionalStock = product.getStock();
@@ -50,5 +63,19 @@ public class OrderService {
                     nonPromotionalQuantity);
         }
         return createOrderWithPromotion(product, promotionalStock);
+    }
+
+    private boolean askForNonPromotionalPurchase(String productName, int nonPromotionalQuantity) {
+        String message = String.format("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)",
+                productName, nonPromotionalQuantity);
+        return inputView.askYesNo(message);
+    }
+
+    private boolean askForMoreItems(Product product) {
+        String message = String.format(
+                "현재 %s은(는) 1개를 무료로 더 받을 수 있습니다. 추가하시겠습니까? (Y/N)",
+                product.getName()
+        );
+        return inputView.askYesNo(message);
     }
 }
