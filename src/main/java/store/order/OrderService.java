@@ -11,10 +11,12 @@ import store.view.InputView;
 public class OrderService {
     private final ProductList productList;
     private final InputView inputView;
+    private final OrderExceedPromotionService orderExceedPromotionService;
 
-    public OrderService(ProductList productList, InputView inputView) {
+    public OrderService(ProductList productList, InputView inputView, OrderExceedPromotionService orderExceedPromotionService) {
         this.productList = productList;
         this.inputView = inputView;
+        this.orderExceedPromotionService = orderExceedPromotionService;
     }
 
     public OrderResult processOrder(String productName, int quantity) {
@@ -51,10 +53,9 @@ public class OrderService {
                                                   int quantity) {
         int promotionalStock = product.getStock();
         if (productType.getPromotion().get().actualBuyableQuantity(promotionalStock) < quantity) {
-            return handleInsufficientStock(products, product, productName, quantity, promotionalStock);
+            return orderExceedPromotionService.handleInsufficientStock(products, product, productName, quantity, promotionalStock);
         }
         if (product.canGetMoreFromPromotion(quantity) && askForMoreItems(product)) {
-            // +1해서 주문 진행
             return processPromotionalStockWithFreeProduct(product, quantity);
         }
         return processOrderWithPromotionButNoFreeProduct(product, quantity);
@@ -97,62 +98,6 @@ public class OrderService {
                 calculateTotalPrice(product, originalQuantity),
                 calculatePromotionDiscount(product, 0)
         );
-    }
-
-    //초과된 프로모션 재고 입력했을때
-    private OrderResult handleInsufficientStock(List<Product> products, Product product, String productName,
-                                                int quantity,
-                                                int promotionalStock) {
-        int actualBuyablePromotionQuantity = product.getType().getPromotion().get()
-                .actualBuyableQuantity(promotionalStock);
-        int nonPromotionalQuantity = quantity - actualBuyablePromotionQuantity;
-        if (askForNonPromotionalPurchase(productName, nonPromotionalQuantity)) {
-            return createMixedOrder(products, product, actualBuyablePromotionQuantity, nonPromotionalQuantity);
-        }
-        return processPromotionalStockWithFreeProduct(product, promotionalStock);
-    }
-
-    private OrderResult createMixedOrder(List<Product> products, Product promotionalProduct,
-                                         int promotionalQuantity, int nonPromotionalQuantity) {
-        int totalQuantity = promotionalQuantity + nonPromotionalQuantity;
-
-        // 프로모션 상품과 일반 상품 찾기
-        Product normalProduct = findNormalProduct(products);
-
-        // 각각의 재고 차감
-        promotionalProduct.reduceStock(promotionalQuantity);
-        normalProduct.reduceStock(nonPromotionalQuantity);
-
-        Promotion promotion = promotionalProduct.getType().getPromotion()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
-
-        int freeQuantity = promotion.calculateFreeQuantity(promotionalQuantity);
-
-        OrderItem orderItem = new OrderItem(promotionalProduct.getName(), totalQuantity);
-        orderItem.setProductInfo(promotionalProduct);  // 프로모션 상품 정보 설정
-
-        int totalPrice = calculateTotalPrice(promotionalProduct, totalQuantity);
-        int promotionDiscount = calculatePromotionDiscount(promotionalProduct, freeQuantity);
-
-        return new OrderResult(
-                orderItem,
-                freeQuantity,
-                totalPrice,
-                promotionDiscount
-        );
-    }
-
-    private Product findNormalProduct(List<Product> products) {
-        return products.stream()
-                .filter(p -> !p.isPromotional())
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 일반 상품을 찾을 수 없습니다."));
-    }
-
-    private boolean askForNonPromotionalPurchase(String productName, int nonPromotionalQuantity) {
-        String message = String.format("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)",
-                productName, nonPromotionalQuantity);
-        return inputView.askYesNo(message);
     }
 
     private boolean askForMoreItems(Product product) {

@@ -4,6 +4,7 @@ package store;
 import store.controller.Controller;
 import store.file.ProductFileReader;
 import store.file.PromotionFileReader;
+import store.order.OrderExceedPromotionService;
 import store.order.OrderService;
 import store.product.ProductList;
 import store.promotion.PromotionList;
@@ -15,10 +16,10 @@ public class Application {
     public static void main(String[] args) {
         PromotionList promotionList = loadPromotions();
         ProductList productList = loadProducts(promotionList);
-
         InputView inputView = new InputView();
         OutputView outputView = new OutputView();
-        OrderService orderService = new OrderService(productList, inputView);
+        OrderExceedPromotionService orderExceedPromotionService = new OrderExceedPromotionService(inputView);
+        OrderService orderService = new OrderService(productList, inputView, orderExceedPromotionService);
 
         Controller controller = new Controller(inputView, outputView, orderService, productList);
         controller.run();
