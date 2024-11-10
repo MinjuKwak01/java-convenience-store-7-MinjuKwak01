@@ -3,6 +3,7 @@ package store.order;
 import camp.nextstep.edu.missionutils.DateTimes;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import store.product.Product;
 import store.product.ProductList;
@@ -28,23 +29,33 @@ public class OrderService {
     }
 
     private OrderResult processInitialOrder(List<Product> products, String productName, int quantity) {
-        return products.stream()
-                .filter(Product::isPromotional) //프로모션중인 상품만 필터링
-                .filter(this::isValidPromotion)
-                .findFirst()
+        return findValidPromotionalProduct(products)
                 .map(product -> processPromotionalProduct(products, product, product.getType(), productName, quantity))
-                .orElseGet(() -> createNormalOrder(products, quantity)); //일반 상품 주문
+                .orElseGet(() -> createNormalOrder(findFirstProduct(products), quantity));
+    }
+
+    private Optional<Product> findValidPromotionalProduct(List<Product> products) {
+        return products.stream()
+                .filter(Product::isPromotional)
+                .filter(this::isValidPromotion)
+                .findFirst();
     }
 
     //프로모션중인 상품이 아닌 경우
-    private OrderResult createNormalOrder(List<Product> products, int originalQuantity) {
-        Product product = findNormalProduct(products);
+    private OrderResult createNormalOrder(Product product, int originalQuantity) {
         product.reduceStock(originalQuantity);
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
         orderItem.setProductInfo(product);
-        return new OrderResult(orderItem, 0, calculateTotalPrice(product, originalQuantity),
+        return new OrderResult(
+                orderItem,
+                0,
+                calculateTotalPrice(product, originalQuantity),
                 calculatePromotionDiscount(product, 0)
         );
+    }
+
+    private Product findFirstProduct(List<Product> products) {
+        return products.getFirst();
     }
 
     private OrderResult processPromotionalProduct(List<Product> products, Product product, ProductType productType,
@@ -135,12 +146,5 @@ public class OrderService {
         return product.getType().getPromotion()
                 .map(promotion -> promotion.isValidPeriod(now))
                 .orElse(false);
-    }
-
-    private Product findNormalProduct(List<Product> products) {
-        return products.stream()
-                .filter(p -> !p.isPromotional())
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 일반 상품을 찾을 수 없습니다."));
     }
 }
