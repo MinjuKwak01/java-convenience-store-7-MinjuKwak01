@@ -1,4 +1,4 @@
-package store;
+package store.order;
 
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import store.order.Order;
-import store.order.OrderItem;
-import store.order.OrderProcessor;
 import store.product.Product;
 import store.product.ProductList;
 import store.promotion.ProductType;
@@ -108,7 +105,7 @@ class OrderProcessorTest {
                 IllegalArgumentException.class,
                 () -> orderProcessor.processOrder(input)
         );
-        assertEquals("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.", exception.getMessage());
+        assertEquals("[ERROR] 존재하지 않는 상품입니다.", exception.getMessage());
     }
 
     @Test

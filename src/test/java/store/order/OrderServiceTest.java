@@ -1,4 +1,4 @@
-package store;
+package store.order;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import store.order.OrderExceedPromotionService;
-import store.order.OrderResult;
-import store.order.OrderService;
 import store.product.Product;
 import store.product.ProductList;
 import store.view.InputView;
