@@ -1,5 +1,8 @@
 package store.order;
 
+import static store.order.OrderErrorMessage.NO_NORMAL_PRODUCT;
+import static store.order.OrderErrorMessage.NO_PROMOTION;
+
 import java.util.List;
 import store.product.Product;
 import store.promotion.Promotion;
@@ -7,6 +10,7 @@ import store.view.InputView;
 
 public class OrderExceedPromotionService {
 
+    private static final String ASK_NON_PROMOTIONAL_PURCHASE_MESSAGE = "현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)";
     private final InputView inputView;
 
     public OrderExceedPromotionService(InputView inputView) {
@@ -28,14 +32,14 @@ public class OrderExceedPromotionService {
 
 
     private boolean askForNonPromotionalPurchase(String productName, int nonPromotionalQuantity) {
-        String message = String.format("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)",
+        String message = String.format(ASK_NON_PROMOTIONAL_PURCHASE_MESSAGE,
                 productName, nonPromotionalQuantity);
         return inputView.askYesNo(message);
     }
 
     private OrderResult createOnlyPromotionalOrder(Product product, int buyablePromotionQuantity) {
         Promotion promotion = product.getType().getPromotion()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException(NO_PROMOTION.getValue()));
         product.reduceStock(buyablePromotionQuantity);
         int freeQuantity = promotion.calculateFreeQuantity(buyablePromotionQuantity);
         OrderItem orderItem = new OrderItem(product.getName(), buyablePromotionQuantity);
@@ -79,7 +83,7 @@ public class OrderExceedPromotionService {
     private OrderResult createMixedOrderResult(Product promotionalProduct, OrderItem orderItem,
                                                int promotionalQuantity) {
         Promotion promotion = promotionalProduct.getType().getPromotion()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException(NO_PROMOTION.getValue()));
 
         int freeQuantity = promotion.calculateFreeQuantity(promotionalQuantity);
         int totalPrice = calculateTotalPrice(promotionalProduct, orderItem.getQuantity());
@@ -92,6 +96,6 @@ public class OrderExceedPromotionService {
         return products.stream()
                 .filter(p -> !p.isPromotional())
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 일반 상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException(NO_NORMAL_PRODUCT.getValue()));
     }
 }

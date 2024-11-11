@@ -1,5 +1,7 @@
 package store.order;
 
+import static store.order.OrderErrorMessage.NO_PROMOTION;
+
 import camp.nextstep.edu.missionutils.DateTimes;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +14,9 @@ import store.promotion.Promotion;
 import store.view.InputView;
 
 public class OrderService {
+    private static final String ASK_NON_PROMOTIONAL_PURCHASE_MESSAGE = "현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)";
+    private static final int MEMBERSHIP_DISCOUNT_LIMIT = 8000;
+    private static final Double MEMBERSHIP_DISCOUNT_RATE = 0.3;
     private final ProductList productList;
     private final InputView inputView;
     private final OrderExceedPromotionService orderExceedPromotionService;
@@ -74,7 +79,7 @@ public class OrderService {
 
     private OrderResult processPromotionalStockWithFreeProduct(Product product, int originalQuantity) {
         Promotion promotion = product.getType().getPromotion()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException(NO_PROMOTION.getValue()));
         int freeQuantity = promotion.calculateFreeQuantity(originalQuantity + promotion.getFreeQuantity()); //1
         int totalOrderQuantity = originalQuantity + promotion.getFreeQuantity();
         product.reduceStock(totalOrderQuantity);
@@ -87,7 +92,7 @@ public class OrderService {
 
     private OrderResult processOrderWithPromotionButNoFreeProduct(Product product, int originalQuantity) {
         Promotion promotion = product.getType().getPromotion()
-                .orElseThrow(() -> new IllegalStateException("[ERROR] 프로모션 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException(NO_PROMOTION.getValue()));
         product.reduceStock(originalQuantity);
         int freeQuantity = promotion.calculateFreeQuantity(originalQuantity);
         OrderItem orderItem = new OrderItem(product.getName(), originalQuantity);
@@ -99,7 +104,7 @@ public class OrderService {
 
     private boolean askForMoreItems(Product product) {
         String message = String.format(
-                "현재 %s은(는) 1개를 무료로 더 받을 수 있습니다. 추가하시겠습니까? (Y/N)",
+                ASK_NON_PROMOTIONAL_PURCHASE_MESSAGE,
                 product.getName()
         );
         return inputView.askYesNo(message);
@@ -137,8 +142,8 @@ public class OrderService {
     }
 
     private int calculateMembershipDiscount(int price) {
-        int discount = (int) (price * 0.3);
-        return Math.min(discount, 8000);
+        int discount = (int) (price * MEMBERSHIP_DISCOUNT_RATE);
+        return Math.min(discount, MEMBERSHIP_DISCOUNT_LIMIT);
     }
 
     private boolean isValidPromotion(Product product) {

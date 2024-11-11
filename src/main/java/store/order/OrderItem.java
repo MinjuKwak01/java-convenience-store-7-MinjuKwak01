@@ -1,12 +1,14 @@
 package store.order;
 
+import static store.order.OrderErrorMessage.INVALID_QUANTITY;
+
 import java.util.Optional;
 import store.product.Product;
 import store.promotion.Promotion;
 
 public class OrderItem {
     private static final int MIN_QUANTITY = 1;
-
+    private static final String STRING_FORMAT = "%s-%d";
     private final String productName;
     private final int quantity;
     private Product selectedProduct;  // 선택된 상품 버전 (일반 또는 프로모션)
@@ -20,7 +22,7 @@ public class OrderItem {
     // 검증 메서드들
     private void validateQuantity(int quantity) {
         if (quantity < MIN_QUANTITY) {
-            throw new IllegalArgumentException("[ERROR] 상품의 수량은 1개 이상이어야 합니다.");
+            throw new IllegalArgumentException(INVALID_QUANTITY.getValue());
         }
     }
 
@@ -47,6 +49,6 @@ public class OrderItem {
 
     @Override
     public String toString() {
-        return String.format("%s-%d", productName, quantity);
+        return String.format(STRING_FORMAT, productName, quantity);
     }
 }

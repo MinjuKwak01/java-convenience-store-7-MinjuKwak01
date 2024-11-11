@@ -1,5 +1,10 @@
 package store.order;
 
+import static store.order.OrderErrorMessage.EXCEED_STOCK;
+import static store.order.OrderErrorMessage.INVALID_FORMAT;
+import static store.order.OrderErrorMessage.INVALID_PRODUCT;
+import static store.order.OrderErrorMessage.WRONG_FORMAT;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,13 +32,13 @@ public class OrderProcessor {
                     .map(this::createOrderItem)
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("[ERROR] 올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요.");
+            throw new IllegalArgumentException(INVALID_FORMAT.getValue());
         }
     }
 
     private void validateOrderFormat(String input) {
         if (!input.matches("\\[.*\\](,\\[.*\\])*")) {
-            throw new IllegalArgumentException("[ERROR] 올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요.");
+            throw new IllegalArgumentException(INVALID_FORMAT.getValue());
         }
     }
 
@@ -52,7 +57,7 @@ public class OrderProcessor {
 
     private void validateOrderFormat(String[] parts) {
         if (parts.length != 2) {
-            throw new IllegalArgumentException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
+            throw new IllegalArgumentException(WRONG_FORMAT.getValue());
         }
     }
 
@@ -60,7 +65,7 @@ public class OrderProcessor {
         try {
             return Integer.parseInt(quantityStr);
         } catch (NumberFormatException e) {
-            throw new NumberFormatException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
+            throw new NumberFormatException(WRONG_FORMAT.getValue());
         }
     }
 
@@ -73,13 +78,13 @@ public class OrderProcessor {
 
     private void validateProduct(OrderItem item) {
         if (!productList.hasProduct(item.getProductName())) {
-            throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
+            throw new IllegalArgumentException(INVALID_PRODUCT.getValue());
         }
     }
 
     private void validateStock(OrderItem item) {
         if (!productList.hasEnoughStock(item.getProductName(), item.getQuantity())) {
-            throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+            throw new IllegalArgumentException(EXCEED_STOCK.getValue());
         }
     }
 }
