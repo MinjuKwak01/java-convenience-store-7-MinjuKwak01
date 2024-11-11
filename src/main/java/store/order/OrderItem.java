@@ -8,8 +8,7 @@ public class OrderItem {
     private static final int MIN_QUANTITY = 1;
 
     private final String productName;
-    private int quantity;
-    private int unitPrice;
+    private final int quantity;
     private Product selectedProduct;  // 선택된 상품 버전 (일반 또는 프로모션)
 
     public OrderItem(String productName, int quantity) {
@@ -28,7 +27,6 @@ public class OrderItem {
     // 상품 정보 설정
     public void setProductInfo(Product product) {
         this.selectedProduct = product;
-        this.unitPrice = product.getPrice();
     }
 
     public Optional<Promotion> getPromotion() {
