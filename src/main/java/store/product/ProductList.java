@@ -25,12 +25,9 @@ public class ProductList {
         if (!products.containsKey(productName)) {
             return false;
         }
-
-        // 모든 버전의 재고를 합산하여 확인
         int totalStock = products.get(productName).stream()
                 .mapToInt(Product::getStock)
                 .sum();
-
         return totalStock >= quantity;
     }
 

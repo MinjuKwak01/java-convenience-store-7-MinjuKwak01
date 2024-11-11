@@ -1,5 +1,8 @@
 package store.file;
 
+import static store.file.FileErrorMessage.PRODUCT_FILE_ERROR;
+import static store.file.FileErrorMessage.PRODUCT_FILE_FORM_ERROR;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,6 +17,15 @@ import store.promotion.PromotionList;
 
 public class ProductFileReader {
     private static final String FILE_PATH = "src/main/resources/products.md";
+    private static final String DELIMITER = ",";
+    private static final String NULL_VALUE = "null";
+    private static final String NUMBER_REGEX = "[+-]?\\d*(\\.\\d+)?";
+    private static final int ZERO_VALUE = 0;
+    private static final int ONE_VALUE = 1;
+    private static final int TWO_VALUE = 2;
+    private static final int THREE_VALUE = 3;
+    private static final int FOUR_VALUE = 4;
+
 
     public ProductList loadProducts(PromotionList promotionList) {
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
@@ -23,7 +35,7 @@ public class ProductFileReader {
             addNormalProductIfOnlyPromotional(productMap);
             return new ProductList(productMap);
         } catch (IOException e) {
-            throw new IllegalStateException("[ERROR] 상품 파일을 읽는데 실패했습니다.", e);
+            throw new IllegalStateException(PRODUCT_FILE_ERROR.getValue());
         }
     }
 
@@ -48,18 +60,18 @@ public class ProductFileReader {
         if (products.size() == 1 && products.getFirst().isPromotional()) {
             Product promotionalProduct = products.getFirst();
             Product normalProduct = Product.createNormalProduct(promotionalProduct.getName(),
-                    promotionalProduct.getPrice(), 0
+                    promotionalProduct.getPrice(), ZERO_VALUE
             );
             products.add(normalProduct);
         }
     }
 
     private void processProductLine(String line, Map<String, List<Product>> productMap, PromotionList promotionList) {
-        String[] values = line.split(",");
+        String[] values = line.split(DELIMITER);
         validateValues(values);
-        String name = values[0];
-        int price = Integer.parseInt(values[1]);
-        String quantityStr = values[2];
+        String name = values[ZERO_VALUE];
+        int price = Integer.parseInt(values[ONE_VALUE]);
+        String quantityStr = values[TWO_VALUE];
         String promotionName = getPromotionName(values);
 
         Product product = createProduct(name, price, quantityStr, promotionName, promotionList);
@@ -67,8 +79,8 @@ public class ProductFileReader {
     }
 
     private String getPromotionName(String[] values) {
-        if (values.length > 3) {
-            return values[3];
+        if (values.length > THREE_VALUE) {
+            return values[THREE_VALUE];
         }
         return null;
     }
@@ -84,17 +96,17 @@ public class ProductFileReader {
     private Product createProductWithoutQuantity(String name, int price, String quantityStr,
                                                  PromotionList promotionList) {
         String promotionName = quantityStr;  // quantityStr 위치의 값을 promotionName으로 사용
-        if (promotionName != null && !"null".equals(promotionName)) {
+        if (promotionName != null && !NULL_VALUE.equals(promotionName)) {
             Promotion promotion = promotionList.findPromotionByName(promotionName);
-            return Product.createPromotionalProduct(name, price, 0, promotion);
+            return Product.createPromotionalProduct(name, price, ZERO_VALUE, promotion);
         }
-        return Product.createNormalProduct(name, price, 0);
+        return Product.createNormalProduct(name, price, ZERO_VALUE);
     }
 
     private Product createProductWithQuantity(String name, int price, String quantityStr,
                                               String promotionName, PromotionList promotionList) {
         int quantity = Integer.parseInt(quantityStr);
-        if (promotionName != null && !"null".equals(promotionName)) {
+        if (promotionName != null && !NULL_VALUE.equals(promotionName)) {
             Promotion promotion = promotionList.findPromotionByName(promotionName);
             return Product.createPromotionalProduct(name, price, quantity, promotion);
         }
@@ -107,13 +119,13 @@ public class ProductFileReader {
     }
 
     private boolean checkIsNumber(String quantityStr) {
-        return quantityStr.matches("[+-]?\\d*(\\.\\d+)?");
+        return quantityStr.matches(NUMBER_REGEX);
     }
 
 
     private void validateValues(String[] values) {
-        if (values.length < 3 || values.length > 4) {
-            throw new IllegalStateException("[ERROR] 상품 정보 형식이 올바르지 않습니다.");
+        if (values.length < THREE_VALUE || values.length > FOUR_VALUE) {
+            throw new IllegalStateException(PRODUCT_FILE_FORM_ERROR.getValue());
         }
     }
 }
