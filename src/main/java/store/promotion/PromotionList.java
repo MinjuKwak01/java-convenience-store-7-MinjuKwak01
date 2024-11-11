@@ -1,5 +1,7 @@
 package store.promotion;
 
+import static store.promotion.PromotionErrorMessage.NO_PROMOTION_EXISTS;
+
 import java.util.Map;
 
 public class PromotionList {
@@ -12,7 +14,7 @@ public class PromotionList {
     public Promotion findPromotionByName(String promotionName) {
         if (!promotions.containsKey(promotionName)) {
             throw new IllegalArgumentException(
-                    String.format("[ERROR] %s 프로모션이 존재하지 않습니다.", promotionName)
+                    String.format(NO_PROMOTION_EXISTS.getValue(), promotionName)
             );
         }
         return promotions.get(promotionName);
