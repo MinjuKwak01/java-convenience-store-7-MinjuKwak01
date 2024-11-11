@@ -10,7 +10,8 @@ public class Promotion {
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
 
-    public Promotion(String name, int requiredQuantity, int freeQuantity, LocalDateTime startDate, LocalDateTime endDate) {
+    public Promotion(String name, int requiredQuantity, int freeQuantity, LocalDateTime startDate,
+                     LocalDateTime endDate) {
         this.name = name;
         this.requiredQuantity = requiredQuantity;
         this.freeQuantity = freeQuantity;

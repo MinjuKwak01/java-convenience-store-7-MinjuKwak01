@@ -54,13 +54,11 @@ public class Receipt {
 
     private void printPriceDetails(List<OrderResult> orderResults) {
         System.out.println(FOOTER_DELIMITER);
-
         int totalQuantity = calculateTotalQuantity(orderResults);
         int totalPrice = calculateTotalPrice(orderResults);
         int totalPromotionDiscount = calculateTotalPromotionDiscount(orderResults);
         int totalMembershipDiscount = calculateTotalMembershipDiscount(orderResults);
         int finalPrice = totalPrice - totalPromotionDiscount - totalMembershipDiscount;
-
         System.out.printf(TOTAL_PURCHASE_FORMAT, totalQuantity, totalPrice);
         System.out.printf(PROMOTION_DISCOUNT_FORMAT, totalPromotionDiscount);
         System.out.printf(MEMBERSHIP_DISCOUNT_FORMAT, totalMembershipDiscount);

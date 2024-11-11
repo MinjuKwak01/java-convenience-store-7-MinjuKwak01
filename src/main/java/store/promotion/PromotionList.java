@@ -1,7 +1,6 @@
 package store.promotion;
 
 import static store.promotion.PromotionErrorMessage.NO_PROMOTION_EXISTS;
-
 import java.util.Map;
 
 public class PromotionList {

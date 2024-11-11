@@ -42,7 +42,6 @@ public class InputView {
         }
     }
 
-
     public boolean askMembership() {
         while (true) {
             try {
@@ -68,7 +67,6 @@ public class InputView {
             }
         }
     }
-
 
     private void validateYesNoInput(String input) {
         if (!input.equals(YES_INPUT) && !input.equals(NO_INPUT)) {

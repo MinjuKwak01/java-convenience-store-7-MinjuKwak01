@@ -1,6 +1,5 @@
 package store.product;
 
-import java.util.Optional;
 import store.promotion.ProductType;
 import store.promotion.Promotion;
 
