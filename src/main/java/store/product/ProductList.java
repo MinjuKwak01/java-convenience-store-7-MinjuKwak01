@@ -1,9 +1,12 @@
 package store.product;
 
+import static store.product.ProductErrorMessage.NO_PRODUCT_EXISTS;
+
 import java.util.List;
 import java.util.Map;
 
 public class ProductList {
+    private static final int ZERO_VALUE = 0;
     private final Map<String, List<Product>> products;
 
     public ProductList(Map<String, List<Product>> products) {
@@ -18,7 +21,7 @@ public class ProductList {
         // 상품이 존재하고 재고가 있는 버전이 하나라도 있는지 확인
         return products.containsKey(productName) &&
                 products.get(productName).stream()
-                        .anyMatch(product -> product.getStock() > 0);
+                        .anyMatch(product -> product.getStock() > ZERO_VALUE);
     }
 
     public boolean hasEnoughStock(String productName, int quantity) {
@@ -34,7 +37,7 @@ public class ProductList {
     // 상품 존재 여부 검증
     public void validateProductExists(String productName) {
         if (!products.containsKey(productName)) {
-            throw new IllegalArgumentException(String.format("[ERROR] %s은(는) 존재하지 않는 상품입니다.", productName));
+            throw new IllegalArgumentException(String.format(NO_PRODUCT_EXISTS.getValue(), productName));
         }
     }
 
