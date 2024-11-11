@@ -17,6 +17,7 @@ public class OutputView {
     private static final String OUT_OF_STOCK = "재고 없음";
     private static final String SPACE = " ";
     private static final String COUNT = "개";
+    private static final int ZERO_VALUE = 0;
     private static final DecimalFormat PRICE_FORMATTER = new DecimalFormat("###,###");
 
     private void printHeader() {
@@ -65,7 +66,7 @@ public class OutputView {
                 true, OUT_OF_STOCK,
                 false, product.getStock() + COUNT
         );
-        return stockMessages.get(product.getStock() == 0);
+        return stockMessages.get(product.getStock() == ZERO_VALUE);
     }
 
     private void appendPromotionInfo(StringBuilder sb, Product product) {
